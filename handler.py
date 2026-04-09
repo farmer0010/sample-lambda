@@ -10,21 +10,20 @@ def handler(event, context):
     results = {}
     
     try:
-        endpoint_res = ssm.get_parameter(Name=f"{ssm_prefix}/DB_ENDPOINT")
+        endpoint_res = ssm.get_parameter(Name=f"{ssm_prefix}/RDS_ENDPOINT")
         rds_host = endpoint_res['Parameter']['Value'].split(':')[0]
+        results['ssm_endpoint'] = "ok"
         
-        ssm.get_parameter(Name=f"{ssm_prefix}/db_password", WithDecryption=True)
+        ssm.get_parameter(Name=f"{ssm_prefix}/DB_PASSWORD", WithDecryption=True)
+        results['ssm_password'] = "ok"
         
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(2)
         s.connect((rds_host, 3306))
         s.close()
-        
-        results['status'] = "success"
-        results['connected_to'] = rds_host
+        results['rds'] = "ok"
         
     except Exception as e:
-        results['status'] = "fail"
         results['error'] = str(e)
 
     return {
