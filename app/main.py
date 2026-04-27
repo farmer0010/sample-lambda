@@ -24,7 +24,7 @@ def add_memo(request: MemoRequest):
         "category": request.category,
         "content": request.content
     }
-    table.put_item(Item=item)  # db 저장
+    table.put_item(Item=item)  #  aws db 저장
 
     return {
         "message": "메모 저장 완료",
