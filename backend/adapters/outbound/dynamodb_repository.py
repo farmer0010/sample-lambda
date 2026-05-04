@@ -3,8 +3,9 @@ from backend.domain.memo import Memo
 from backend.application.ports import MemoRepository
 
 class DynamoDBRepository(MemoRepository):
-    def __init__(self, table_name: str = "mylog-memos"):
-        self.dynamodb = boto3.resource("dynamodb")
+    def __init__(self, table_name: str = "juyo-serverless-dev-table"):
+        self.dynamodb = boto3.resource("dynamodb",
+                                       region_name="ap-northeast-2")
         self.table = self.dynamodb.Table(table_name)
 
     def save(self, memo: Memo) -> None:
