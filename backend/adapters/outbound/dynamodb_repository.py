@@ -12,7 +12,8 @@ class DynamoDBRepository(MemoRepository):
         """포트의 save 규칙을 구현"""
 
         item = {
-            'id': memo.id,
+            'PK': f"MEMO#{memo.id}",
+            'SK': memo.created_at,
             'category': memo.category,
             'content': memo.content,
             'created_at': memo.created_at,
