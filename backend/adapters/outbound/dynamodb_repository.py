@@ -20,6 +20,25 @@ class DynamoDBRepository(MemoRepository):
         }
         self.table.put_item(Item=item)
 
-    def get_all(self) -> list[Memo]:
-        """조회 기능은 나중에 list 만들 떄 구현해둘 예정"""
-        pass
+    def get_all(self, category: str = None, limit: int = 5, search: str = None) -> list[Memo]:
+        """DB에서 모든 메모를 조회해서 도메인 모델로 변환"""
+        response = self.table.scan()
+        items = response.get('Items', [])
+
+        memos = []
+        for item in items:
+            if category and item.get('category') != category:
+                continue
+            if search and search.lower() not in item.get('content', '').lower():
+                continue
+
+            memos.append(
+                Memo(
+                    id=item['PK'].replace('MEMO#', ''),
+                    content=item['content'],
+                    category=item.get('category', 'basic'),
+                    created_at=item.get('created_at', '')
+                )
+            )
+        memos.sort(key=lambda x: x.created_at, reverse=True)
+        return memos[:limit]
