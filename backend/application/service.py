@@ -1,5 +1,5 @@
-from backend.domain.memo import Memo
 from backend.application.ports import MemoRepository
+from backend.domain.memo import Memo
 
 
 class MemoService:

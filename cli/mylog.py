@@ -1,7 +1,7 @@
-import requests  # type: ignore
+import argparse
 from typing import Any
 
-import argparse
+import requests  # type: ignore
 
 BASE_URL = "https://4roukuec13.execute-api.ap-northeast-2.amazonaws.com/v1"
 

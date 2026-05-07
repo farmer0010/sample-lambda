@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from mangum import Mangum
+
 from backend.adapters.inbound import api
 
 app = FastAPI(

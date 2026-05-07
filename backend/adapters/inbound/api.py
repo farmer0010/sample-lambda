@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from backend.application.service import MemoService
 from backend.adapters.outbound.dynamodb_repository import DynamoDBRepository
+from backend.application.service import MemoService
 
 # 스프링의 @RestContrroler 역할을 할 라우터 생성
 router = APIRouter()
