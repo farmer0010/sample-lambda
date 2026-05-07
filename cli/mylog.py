@@ -1,5 +1,7 @@
+import requests  # type: ignore
+from typing import Any
+
 import argparse
-import requests
 
 BASE_URL = "https://4roukuec13.execute-api.ap-northeast-2.amazonaws.com/v1"
 
@@ -24,7 +26,7 @@ def list_memos(category: str, limit: int, search: str):
     """AWS서버에 메모를 조회하고 요청하고 출력합니다"""
     url = f"{BASE_URL}/memos"
 
-    params = {"limit": limit}
+    params: dict[str, Any] = {"limit": limit}
     if category:
         params["category"] = category
     if search:

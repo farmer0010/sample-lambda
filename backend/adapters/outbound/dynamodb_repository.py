@@ -21,7 +21,7 @@ class DynamoDBRepository(MemoRepository):
         self.table.put_item(Item=item)
 
     def get_all(
-        self, category: str = None, limit: int = 5, search: str = None
+        self, category: str | None = None, limit: int = 5, search: str | None = None
     ) -> list[Memo]:
         """DB에서 모든 메모를 조회해서 도메인 모델로 변환"""
         response = self.table.scan()

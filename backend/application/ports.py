@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from ast import List
 
 from backend.domain.memo import Memo
 
@@ -16,6 +15,8 @@ class MemoRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(self) -> List[Memo]:
-        """모든 메모를 가져옵니다"""
+    def get_all(
+        self, category: str | None = None, limit: int = 5, search: str | None = None
+    ) -> list[Memo]:
+        """조건에 맞는 메모들을 가져옵니다."""
         pass
