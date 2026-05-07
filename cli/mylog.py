@@ -29,7 +29,7 @@ def list_memos(category: str, limit: int, search: str):
     try:
         response = requests.get(url, params=params)
         response.raise_for_status()
-        memos = response.json.get("memos", [])
+        memos = response.json().get("memos", [])
 
         if not memos:
             print("> 클라우드에 저장된 메모가 없습니다.")
