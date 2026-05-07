@@ -52,9 +52,7 @@ def list_memos(category: str, limit: int, search: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="개발자 전용 CLI 메모장 MyLog"
-    )
+    parser = argparse.ArgumentParser(description="개발자 전용 CLI 메모장 MyLog")
     subparsers = parser.add_subparsers(dest="command", help="사용할 명령어")
 
     # 명령어 1. add
