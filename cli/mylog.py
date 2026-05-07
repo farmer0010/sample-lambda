@@ -1,7 +1,7 @@
 import argparse
 import requests
 
-BASE_URL = "https://4roukuec13.execute-api.ap-northeast-2.amazonaws.com/v1/add"
+BASE_URL = "https://4roukuec13.execute-api.ap-northeast-2.amazonaws.com/v1"
 
 def add_memo(content: str, category: str):
     """AWS 서버에 메모를 저장 요청합니다."""
