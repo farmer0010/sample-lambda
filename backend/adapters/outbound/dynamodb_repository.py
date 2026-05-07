@@ -2,42 +2,44 @@ import boto3
 from backend.domain.memo import Memo
 from backend.application.ports import MemoRepository
 
+
 class DynamoDBRepository(MemoRepository):
     def __init__(self, table_name: str = "juyo-serverless-dev-table"):
-        self.dynamodb = boto3.resource("dynamodb",
-                                       region_name="ap-northeast-2")
+        self.dynamodb = boto3.resource("dynamodb", region_name="ap-northeast-2")
         self.table = self.dynamodb.Table(table_name)
 
     def save(self, memo: Memo) -> None:
         """포트의 save 규칙을 구현"""
 
         item = {
-            'PK': f"MEMO#{memo.id}",
-            'SK': memo.created_at,
-            'category': memo.category,
-            'content': memo.content,
-            'created_at': memo.created_at,
+            "PK": f"MEMO#{memo.id}",
+            "SK": memo.created_at,
+            "category": memo.category,
+            "content": memo.content,
+            "created_at": memo.created_at,
         }
         self.table.put_item(Item=item)
 
-    def get_all(self, category: str = None, limit: int = 5, search: str = None) -> list[Memo]:
+    def get_all(
+        self, category: str = None, limit: int = 5, search: str = None
+    ) -> list[Memo]:
         """DB에서 모든 메모를 조회해서 도메인 모델로 변환"""
         response = self.table.scan()
-        items = response.get('Items', [])
+        items = response.get("Items", [])
 
         memos = []
         for item in items:
-            if category and item.get('category') != category:
+            if category and item.get("category") != category:
                 continue
-            if search and search.lower() not in item.get('content', '').lower():
+            if search and search.lower() not in item.get("content", "").lower():
                 continue
 
             memos.append(
                 Memo(
-                    id=item['PK'].replace('MEMO#', ''),
-                    content=item['content'],
-                    category=item.get('category', 'basic'),
-                    created_at=item.get('created_at', '')
+                    id=item["PK"].replace("MEMO#", ""),
+                    content=item["content"],
+                    category=item.get("category", "basic"),
+                    created_at=item.get("created_at", ""),
                 )
             )
         memos.sort(key=lambda x: x.created_at, reverse=True)

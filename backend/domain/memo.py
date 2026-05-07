@@ -2,9 +2,11 @@ from dataclasses import dataclass, field
 import uuid
 from datetime import datetime
 
+
 @dataclass
 class Memo:
     """메모 도메인 모델"""
+
     content: str
     category: str = "basic"
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])

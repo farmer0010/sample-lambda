@@ -3,6 +3,7 @@ from ast import List
 
 from backend.domain.memo import Memo
 
+
 class MemoRepository(ABC):
     """
     // 인터페이스 (아웃고잉 포트)
