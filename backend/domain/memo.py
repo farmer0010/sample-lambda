@@ -1,17 +1,23 @@
-from dataclasses import dataclass, field
 import uuid
-from datetime import datetime
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+
+class MemoDomainError(Exception):
+    """
+    """
+    pass
 
 @dataclass
 class Memo:
-    """메모 도메인 모델"""
     content: str
-    category: str = "cli"
+    category: str = "basic"
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def __post_init__(self):
         if not self.content or not self.content.strip():
-            raise ValueError("메모 내용을 비어있을 수 없습니다.")
-        if len(self.content) > 500:
-            raise ValueError("메모는 500자 이상 넘을 수 없습니다.")
+            raise MemoDomainError("메모 내용을 비어있을 수 없습니다.")
+        if len(self.content) > 1500:
+            raise MemoDomainError("메모는 1500자를 초과할 수 없습니다.")
+        if self.category and len(self.category) > 30:
+            raise MemoDomainError("카테고리 이름은 30자를 초과할 수 없습니다.")
