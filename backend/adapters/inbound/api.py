@@ -9,7 +9,7 @@ router = APIRouter()
 
 class MemoCreateRequest(BaseModel):
     content: str
-    category: str = "basic"
+    category: str | None = None
 
 class MemoCreateResponse(BaseModel):
     message: str

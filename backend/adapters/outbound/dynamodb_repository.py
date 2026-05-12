@@ -1,15 +1,18 @@
+import os
+
 import boto3
 from backend.domain.memo import Memo
 from backend.application.ports import MemoRepository
 
 class DynamoDBRepository(MemoRepository):
-    def __init__(self, table_name: str = "juyo-serverless-dev-table"):
+    def __init__(self):
+        table_name = os.getenv('DYNAMODB_TABLE')
+
         self.dynamodb = boto3.resource("dynamodb",
                                        region_name="ap-northeast-2")
         self.table = self.dynamodb.Table(table_name)
 
     def save(self, memo: Memo) -> None:
-        """포트의 save 규칙을 구현"""
 
         item = {
             'PK': f"MEMO#{memo.id}",
