@@ -15,7 +15,7 @@ build:
 		-r requirements.txt \
 		--target ./_package
 	rm requirements.txt
-	cp -R ./app ./_package/app
+	cp -R ./backend ./_package/backend
 	cp handler.py ./_package/
 	cd _package && zip -r ../lambda.zip . && cd ..
 	rm -rf ./_package
