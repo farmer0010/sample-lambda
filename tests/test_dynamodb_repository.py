@@ -1,44 +1,57 @@
-import boto3
-from moto import mock_aws
-from backend.domain.memo import Memo
-from backend.adapters.outbound.dynamodb_repository import DynamoDBRepository
 import pytest
+from unittest.mock import patch, MagicMock
 from botocore.exceptions import ClientError
 
-@mock_aws
-def test_save_memo():
-    dynamodb = boto3.resource('dynamodb', region_name='ap-northeast-2')
-    test_table_name = 'test-memo-table'
+from backend.domain.memo import Memo
+from backend.adapters.outbound.dynamodb_repository import DynamoDBRepository
 
-    dynamodb.create_table(
-        TableName=test_table_name,
-        KeySchema=[
-            {'AttributeName': 'PK', 'KeyType': 'HASH'},
-            {'AttributeName': 'SK', 'KeyType': 'RANGE'}
-        ],
-        AttributeDefinitions=[
-            {'AttributeName': 'PK', 'AttributeType': 'S'},
-            {'AttributeName': 'SK', 'AttributeType': 'S'}
-        ],
-        BillingMode='PAY_PER_REQUEST'
-    )
-    repo = DynamoDBRepository(table_name=test_table_name)
-    memo = Memo(content="테스트 코드 메모", category="test")
+
+@patch("backend.adapters.outbound.dynamodb_repository.boto3.resource")
+def test_save_memo(mock_boto_resource):
+    mock_dynamodb = MagicMock()
+    mock_table = MagicMock()
+
+    mock_dynamodb.Table.return_value = mock_table
+    mock_boto_resource.return_value = mock_dynamodb
+
+    repo = DynamoDBRepository(table_name="test-table")
+    memo = Memo(content="내장 Mock으로 테스트하는 메모!", category="test")
+
     repo.save(memo)
 
-    table = dynamodb.Table(test_table_name)
-    response = table.get_item(Key={"PK": f"MEMO#{memo.id}", "SK": memo.created_at})
+    mock_table.put_item.assert_called_once_with(
+        Item={
+            "PK": f"MEMO#{memo.id}",
+            "SK": memo.created_at,
+            "category": memo.category,
+            "content": memo.content,
+            "created_at": memo.created_at,
+        }
+    )
 
-    assert 'Item' in response
-    assert response['Item']['content'] == "테스트 코드 메모"
-    assert response['Item']['category'] == "test"
 
-@mock_aws
-def test_save_memo_table_not_exist():
-    wrong_table_name = "not-exist-table"
+@patch("backend.adapters.outbound.dynamodb_repository.boto3.resource")
+def test_save_memo_table_not_exist(mock_boto_resource):
+    mock_dynamodb = MagicMock()
+    mock_table = MagicMock()
 
-    repo = DynamoDBRepository(table_name=wrong_table_name)
-    memo = Memo(content="존재하지않는 테이블에 저장 시도", category="test")
+    mock_dynamodb.Table.return_value = mock_table
+    mock_boto_resource.return_value = mock_dynamodb
+
+    error_response = {
+        "Error": {
+            "Code": "ResourceNotFoundException",
+            "Message": "Requested resource not found",
+        }
+    }
+
+    mock_table.put_item.side_effect = ClientError(
+        error_response,
+        "PutItem",
+    )
+
+    repo = DynamoDBRepository(table_name="not-exist-table")
+    memo = Memo(content="존재하지 않는 테이블에 저장 시도", category="test")
 
     with pytest.raises(ClientError) as exc_info:
         repo.save(memo)
