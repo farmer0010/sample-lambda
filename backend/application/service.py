@@ -1,7 +1,7 @@
 from backend.domain.memo import Memo
-from backend.application.ports import MemoRepository
+from backend.application.ports import MemoUseCase, MemoRepository
 
-class MemoService:
+class MemoService(MemoUseCase):
     def __init__(self, repo: MemoRepository):
         self.repo = repo
 

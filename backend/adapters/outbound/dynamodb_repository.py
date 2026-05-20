@@ -1,13 +1,9 @@
-import os
-
 import boto3
 from backend.domain.memo import Memo
 from backend.application.ports import MemoRepository
 
 class DynamoDBRepository(MemoRepository):
-    def __init__(self):
-        table_name = os.getenv('DYNAMODB_TABLE')
-
+    def __init__(self, table_name: str):
         self.dynamodb = boto3.resource("dynamodb",
                                        region_name="ap-northeast-2")
         self.table = self.dynamodb.Table(table_name)
@@ -24,5 +20,4 @@ class DynamoDBRepository(MemoRepository):
         self.table.put_item(Item=item)
 
     def get_all(self) -> list[Memo]:
-        """조회 기능은 나중에 list 만들 떄 구현해둘 예정"""
         pass
