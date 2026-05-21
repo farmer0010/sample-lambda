@@ -1,9 +1,10 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from botocore.exceptions import ClientError
 
-from backend.domain.memo import Memo
 from backend.adapters.outbound.dynamodb_repository import DynamoDBRepository
+from backend.domain.memo import Memo
 
 
 @patch("backend.adapters.outbound.dynamodb_repository.boto3.resource")

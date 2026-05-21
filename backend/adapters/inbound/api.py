@@ -1,4 +1,5 @@
 import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
@@ -9,21 +10,25 @@ from backend.domain.memo import MemoDomainError
 
 router = APIRouter()
 
+
 class MemoCreateRequest(BaseModel):
     content: str
     category: str | None = None
+
 
 class MemoCreateResponse(BaseModel):
     message: str
     id: str
 
+
 def get_memo_use_case() -> MemoUseCase:
-    table_name = os.getenv('DYNAMODB_TABLE')
+    table_name = os.getenv("DYNAMODB_TABLE")
     if not table_name:
         raise ValueError("DYNAMODB_TABLE 환경변수가 설정되지 않았습니다")
 
-    repo = DynamoDBRepository(table_name = table_name)
+    repo = DynamoDBRepository(table_name=table_name)
     return MemoService(repo)
+
 
 @router.post("/add", response_model=MemoCreateResponse)
 def add_memo(
