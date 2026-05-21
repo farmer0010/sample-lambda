@@ -17,6 +17,6 @@ class MemoService(MemoUseCase):
         return new_memo
 
     def get_all_memos(
-        self, category: str | None = None, limit: int = 5, search: str | None = None
+        self, category: str | None, limit: int, search: str | None
     ) -> List[Memo]:
         return self.repo.get_all(category=category, limit=limit, search=search)

@@ -20,7 +20,7 @@ class DynamoDBRepository(MemoRepository):
         self.table.put_item(Item=item)
 
     def get_all(
-        self, category: str | None = None, limit: int = 5, search: str | None = None
+        self, category: str | None, limit: int, search: str | None
     ) -> list[Memo]:
         response = self.table.scan()
         items = response.get("Items", [])

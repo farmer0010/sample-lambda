@@ -95,20 +95,20 @@ def test_get_all_memos(mock_boto3_resource):
     }
     repo = DynamoDBRepository(table_name="test-table")
 
-    memos = repo.get_all(limit=2)
+    memos = repo.get_all(category=None, limit=2, search=None)
     assert len(memos) == 2
     assert memos[0].id == "4"
 
-    java_memos = repo.get_all(category="java")
+    java_memos = repo.get_all(category="java", limit=5, search=None)
     assert len(java_memos) == 1
     assert java_memos[0].id == "3"
 
-    python_memos = repo.get_all(category="python")
+    python_memos = repo.get_all(category="python", limit=5, search=None)
     assert len(python_memos) == 1
     assert python_memos[0].id == "4"
 
-    search_memos = repo.get_all(search="메모")
+    search_memos = repo.get_all(category=None, limit=5, search="메모")
     assert len(search_memos) == 4
 
-    empty_search_memos = repo.get_all(search="러스트")
+    empty_search_memos = repo.get_all(category=None, limit=5, search="러스트")
     assert len(empty_search_memos) == 0
