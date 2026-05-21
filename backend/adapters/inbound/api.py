@@ -39,3 +39,14 @@ def add_memo(
         return MemoCreateResponse(message="메모 저장 완료", id=memo.id)
     except MemoDomainError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/memos")
+def get_memos(
+    category: str | None = None,
+    limit: int = 5,
+    search: str | None = None,
+    service: MemoUseCase = Depends(get_memo_use_case),
+):
+    memos = service.get_all_memos(category=category, limit=limit, search=search)
+    return {"memos": memos}

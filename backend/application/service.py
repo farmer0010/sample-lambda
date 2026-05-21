@@ -1,3 +1,5 @@
+from typing import List
+
 from backend.application.ports import MemoRepository, MemoUseCase
 from backend.domain.memo import Memo
 
@@ -13,3 +15,8 @@ class MemoService(MemoUseCase):
             new_memo = Memo(content=content)
         self.repo.save(new_memo)
         return new_memo
+
+    def get_all_memos(
+        self, category: str | None = None, limit: int = 5, search: str | None = None
+    ) -> List[Memo]:
+        return self.repo.get_all(category=category, limit=limit, search=search)

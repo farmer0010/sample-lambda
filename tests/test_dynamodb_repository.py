@@ -58,3 +58,57 @@ def test_save_memo_table_not_exist(mock_boto_resource):
         repo.save(memo)
 
     assert "ResourceNotFoundException" in str(exc_info.value)
+
+
+@patch("backend.adapters.outbound.dynamodb_repository.boto3.resource")
+def test_get_all_memos(mock_boto3_resource):
+    mock_table = MagicMock()
+    mock_boto3_resource.return_value.Table.return_value = mock_table
+
+    mock_table.scan.return_value = {
+        "Items": [
+            {
+                "PK": "MEMO#1",
+                "content": "첫 번째 기본 메모",
+                "category": "basic",
+                "created_at": "2025-05-21T10:00:00",
+            },
+            {
+                "PK": "MEMO#2",
+                "content": "두 번째 기본 메모",
+                "category": "basic",
+                "created_at": "2025-05-21T10:10:00",
+            },
+            {
+                "PK": "MEMO#3",
+                "content": "자바 메모입니다",
+                "category": "java",
+                "created_at": "2025-05-21T11:00:00",
+            },
+            {
+                "PK": "MEMO#4",
+                "content": "파이썬 메모",
+                "category": "python",
+                "created_at": "2025-05-22T12:00:00",
+            },
+        ]
+    }
+    repo = DynamoDBRepository(table_name="test-table")
+
+    memos = repo.get_all(limit=2)
+    assert len(memos) == 2
+    assert memos[0].id == "4"
+
+    java_memos = repo.get_all(category="java")
+    assert len(java_memos) == 1
+    assert java_memos[0].id == "3"
+
+    python_memos = repo.get_all(category="python")
+    assert len(python_memos) == 1
+    assert python_memos[0].id == "4"
+
+    search_memos = repo.get_all(search="메모")
+    assert len(search_memos) == 4
+
+    empty_search_memos = repo.get_all(search="러스트")
+    assert len(empty_search_memos) == 0
