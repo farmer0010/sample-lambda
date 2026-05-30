@@ -30,16 +30,10 @@ def setup_mock_table():
     mock_table.query.return_value = {
         "Items": [
             {
-                "PK": "MEMO#1",
-                "content": "첫 번째 기본 메모",
-                "category": "basic",
-                "created_at": "2025-05-21T10:00:00",
-            },
-            {
-                "PK": "MEMO#2",
-                "content": "두 번째 기본 메모",
-                "category": "basic",
-                "created_at": "2025-05-21T10:10:00",
+                "PK": "MEMO#4",
+                "content": "파이썬 메모",
+                "category": "python",
+                "created_at": "2025-05-22T12:00:00",
             },
             {
                 "PK": "MEMO#3",
@@ -48,10 +42,16 @@ def setup_mock_table():
                 "created_at": "2025-05-21T11:00:00",
             },
             {
-                "PK": "MEMO#4",
-                "content": "파이썬 메모",
-                "category": "python",
-                "created_at": "2025-05-22T12:00:00",
+                "PK": "MEMO#2",
+                "content": "두 번째 기본 메모",
+                "category": "basic",
+                "created_at": "2025-05-21T10:10:00",
+            },
+            {
+                "PK": "MEMO#1",
+                "content": "첫 번째 기본 메모",
+                "category": "basic",
+                "created_at": "2025-05-21T10:00:00",
             },
         ]
     }
@@ -64,7 +64,7 @@ def test_get_memos_limit_and_sort():
 
     memos = repo.get_all(category=None, limit=2, search=None)
     assert len(memos) == 2
-    assert memos[0].id == "1"
+    assert memos[0].id == "4"
 
 
 def test_get_memos_filter_by_category():
