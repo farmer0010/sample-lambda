@@ -15,7 +15,7 @@ def test_save_memo():
     mock_table.put_item.assert_called_once_with(
         Item={
             "PK": f"MEMO#{memo.id}",
-            "SK": memo.created_at,
+            "SK": "METADATA",
             "category": memo.category,
             "content": memo.content,
             "created_at": memo.created_at,

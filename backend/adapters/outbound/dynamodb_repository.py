@@ -16,7 +16,7 @@ class DynamoDBRepository(MemoRepository):
     def save(self, memo: Memo) -> None:
         item = {
             "PK": f"MEMO#{memo.id}",
-            "SK": memo.created_at,
+            "SK": "METADATA",
             "category": memo.category,
             "content": memo.content,
             "created_at": memo.created_at,
