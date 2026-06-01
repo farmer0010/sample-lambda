@@ -6,12 +6,14 @@ from backend.domain.memo import Memo
 
 class MemoUseCase(ABC):
     @abstractmethod
-    def create_memo(self, content: str, category: str | None = None) -> Memo:
+    def create_memo(
+        self, user_id: str, content: str, category: str | None = None
+    ) -> Memo:
         pass
 
     @abstractmethod
     def get_all_memos(
-        self, category: str | None, limit: int, search: str | None
+        self, user_id: str, category: str | None, limit: int, search: str | None
     ) -> List[Memo]:
         pass
 
@@ -23,6 +25,6 @@ class MemoRepository(ABC):
 
     @abstractmethod
     def get_all(
-        self, category: str | None, limit: int, search: str | None
+        self, user_id: str, category: str | None, limit: int, search: str | None
     ) -> List[Memo]:
         pass

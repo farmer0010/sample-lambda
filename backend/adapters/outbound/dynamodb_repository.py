@@ -17,30 +17,40 @@ class DynamoDBRepository(MemoRepository):
         item = {
             "PK": f"MEMO#{memo.id}",
             "SK": "METADATA",
+            "user_id": memo.user_id,
             "category": memo.category,
             "content": memo.content,
             "created_at": memo.created_at,
-            "GSI1PK": "MEMO",
+            "GSI1PK": f"USER#{memo.user_id}",
             "GSI1SK": memo.created_at,
+            "GSI2PK": f"USER#{memo.user_id}#CATEGORY#{memo.category}",
+            "GSI2SK": memo.created_at,
         }
         self.table.put_item(Item=item)
 
     def get_all(
-        self, category: str | None, limit: int, search: str | None
+        self, user_id: str, category: str | None, limit: int, search: str | None
     ) -> list[Memo]:
-        response = self.table.query(
-            IndexName="GSI1",
-            KeyConditionExpression=Key("GSI1PK").eq("MEMO"),
-            ScanIndexForward=False,
-        )
+        if category:
+            response = self.table.query(
+                IndexName="GSI2",
+                KeyConditionExpression=Key("GSI2PK").eq(
+                    f"USER#{user_id}#CATEGORY#{category}"
+                ),
+                ScanIndexForward=False,
+            )
+        else:
+            response = self.table.query(
+                IndexName="GSI1",
+                KeyConditionExpression=Key("GSI1PK").eq(f"USER#{user_id}"),
+                ScanIndexForward=False,
+            )
         items = response.get("Items", [])
 
         memos = []
 
         for item in items:
             item_category = item.get("category", "basic")
-            if category and item_category != category:
-                continue
 
             if search and search.lower() not in item.get("content", "").lower():
                 continue
@@ -50,8 +60,9 @@ class DynamoDBRepository(MemoRepository):
             memos.append(
                 Memo(
                     id=memo_id,
+                    user_id=item["user_id"],
                     content=item["content"],
-                    category=item.get("category", "basic"),
+                    category=item_category,
                     created_at=item.get("created_at", ""),
                 )
             )

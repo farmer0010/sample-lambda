@@ -1,6 +1,6 @@
 import os
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
 from backend.adapters.outbound.dynamodb_repository import DynamoDBRepository
@@ -32,10 +32,14 @@ def get_memo_use_case() -> MemoUseCase:
 
 @router.post("/add", response_model=MemoCreateResponse)
 def add_memo(
-    request: MemoCreateRequest, use_case: MemoUseCase = Depends(get_memo_use_case)
+    request: MemoCreateRequest,
+    x_user_id: str = Header(..., alias="X-USER-ID"),
+    use_case: MemoUseCase = Depends(get_memo_use_case),
 ):
     try:
-        memo = use_case.create_memo(content=request.content, category=request.category)
+        memo = use_case.create_memo(
+            user_id=x_user_id, content=request.content, category=request.category
+        )
         return MemoCreateResponse(message="메모 저장 완료", id=memo.id)
     except MemoDomainError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -46,7 +50,10 @@ def get_memos(
     category: str | None = None,
     limit: int = 5,
     search: str | None = None,
+    x_user_id: str = Header(..., alias="X-USER-ID"),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
-    memos = service.get_all_memos(category=category, limit=limit, search=search)
+    memos = service.get_all_memos(
+        user_id=x_user_id, category=category, limit=limit, search=search
+    )
     return {"memos": memos}
