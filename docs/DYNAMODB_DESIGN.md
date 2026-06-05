@@ -10,60 +10,64 @@
 
 조회 패턴
 
-* PK = USER#{user_id}
-* SK = MEMO#{memo_id}
+* GSI1PK = MEMO#{memo_id}
 
 ### 메모 수정
 
 조회 패턴
 
-* PK = USER#{user_id}
-* SK = MEMO#{memo_id}
+* GSI1PK = MEMO#{memo_id}
 
 ### 메모 삭제
 
 조회 패턴
 
-* PK = USER#{user_id}
-* SK = MEMO#{memo_id}
+* GSI1PK = MEMO#{memo_id}
 
 ### 전체 메모 조회
 
 조회 패턴
 
-* GSI1PK = USER#{user_id}
-* created_at 내림차순 정렬
+* PK = USER#{user_id}
+* ScanIndexForward = False
 
 ### 카테고리별 메모 조회
 
 조회 패턴
 
-* GSI1PK = USER#{user_id}
-* category FilterExpression
-* created_at 내림차순 정렬
+* GSI2PK = USER#{user_id}#CATEGORY#{category}
+* ScanIndexForward = False
 
 ### 검색어 조회
 
 조회 패턴
 
-* GSI1PK = USER#{user_id}
-* search_content FilterExpression
-* created_at 내림차순 정렬
+* PK = USER#{user_id}
+* 애플리케이션 레벨 문자열 필터링
 
 ---
 
 ## Base Table
 
-| Key | Value          |
-| --- | -------------- |
-| PK  | USER#{user_id} |
-| SK  | MEMO#{memo_id} |
+| Key | Value               |
+| --- | ------------------- |
+| PK  | USER#{user_id}      |
+| SK  | MEMO#{memo_id_ulid} |
 
 ---
 
 ## GSI1
 
-| Key    | Value          |
-| ------ | -------------- |
-| GSI1PK | USER#{user_id} |
-| GSI1SK | created_at     |
+| Key    | Value         |
+| ------ | ------------- |
+| GSI1PK | Base Table SK |
+| GSI1SK | Base Table PK |
+
+---
+
+## GSI2
+
+| Key    | Value                              |
+| ------ | ---------------------------------- |
+| GSI2PK | USER#{user_id}#CATEGORY#{category} |
+| GSI2SK | Base Table SK                      |
