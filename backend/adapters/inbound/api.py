@@ -49,11 +49,19 @@ def add_memo(
 def get_memos(
     category: str | None = None,
     limit: int = 5,
-    search: str | None = None,
     x_user_id: str = Header(..., alias="X-USER-ID"),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
-    memos = service.get_all_memos(
-        user_id=x_user_id, category=category, limit=limit, search=search
-    )
+    memos = service.get_all_memos(user_id=x_user_id, category=category, limit=limit)
     return {"memos": memos}
+
+
+@router.get("/memos/{memo_id}")
+def get_memo(
+    memo_id: str,
+    service: MemoUseCase = Depends(get_memo_use_case),
+):
+    memo = service.get_memo_by_id(memo_id)
+    if not memo:
+        raise HTTPException(status_code=404, detail="메모를 찾을 수 없습니다")
+    return memo

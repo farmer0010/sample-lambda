@@ -22,37 +22,27 @@ class DynamoDBRepository(MemoRepository):
             "user_id": memo.user_id,
             "category": memo.category,
             "content": memo.content,
-            "content_lower": memo.content.lower(),
             "created_at": memo.created_at,
-            "GSI1PK": f"USER#{memo.user_id}",
-            "GSI1SK": memo.created_at,
+            "GSI1PK": f"MEMO#{memo.id}",
+            "GSI1SK": f"USER#{memo.user_id}",
+            "GSI2PK": f"USER#{memo.user_id}#CATEGORY#{memo.category}",
+            "GSI2SK": f"MEMO#{memo.id}",
         }
         self.table.put_item(Item=item)
 
-    def get_all(
-        self, user_id: str, category: str | None, limit: int, search: str | None
-    ) -> list[Memo]:
+    def get_all(self, user_id: str, category: str | None, limit: int) -> list[Memo]:
         query_params: dict[str, Any] = {
-            "IndexName": "GSI1",
-            "KeyConditionExpression": Key("GSI1PK").eq(f"USER#{user_id}"),
             "ScanIndexForward": False,
+            "Limit": limit,
         }
 
-        filter_expression = []
-        expression_attribute_values = {}
-
         if category:
-            filter_expression.append("category = :category")
-            expression_attribute_values[":category"] = category
-        if search:
-            filter_expression.append("contains(content_lower, :search)")
-            expression_attribute_values[":search"] = search.lower()
-        if filter_expression:
-            query_params["FilterExpression"] = " AND ".join(filter_expression)
-            query_params["ExpressionAttributeValues"] = expression_attribute_values
-
-        if not category and not search:
-            query_params["Limit"] = limit
+            query_params["IndexName"] = "GSI2"
+            query_params["KeyConditionExpression"] = Key("GSI2PK").eq(
+                f"USER#{user_id}#CATEGORY#{category}"
+            )
+        else:
+            query_params["KeyConditionExpression"] = Key("PK").eq(f"USER#{user_id}")
 
         response = self.table.query(**query_params)
         items = response.get("Items", [])
@@ -75,3 +65,23 @@ class DynamoDBRepository(MemoRepository):
             )
 
         return memos[:limit]
+
+    def get_by_id(self, memo_id: str) -> Memo | None:
+        response = self.table.query(
+            IndexName="GSI1",
+            KeyConditionExpression=Key("GSI1PK").eq(f"MEMO#{memo_id}"),
+        )
+        items = response.get("Items", [])
+        if not items:
+            return None
+
+        item = items[0]
+        item_category = item.get("category", "basic")
+        _, extracted_id = item.get("SK", "").split("#")
+        return Memo(
+            id=extracted_id,
+            user_id=item["user_id"],
+            content=item["content"],
+            category=item_category,
+            created_at=item.get("created_at", ""),
+        )

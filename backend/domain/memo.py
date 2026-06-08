@@ -1,6 +1,7 @@
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+
+from ulid import ULID
 
 
 class MemoDomainError(Exception):
@@ -12,7 +13,7 @@ class Memo:
     content: str
     user_id: str
     category: str = "basic"
-    id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    id: str = field(default_factory=lambda: str(ULID()))
     created_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )

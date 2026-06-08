@@ -19,8 +19,9 @@ class MemoService(MemoUseCase):
         return new_memo
 
     def get_all_memos(
-        self, user_id: str, category: str | None, limit: int, search: str | None
+        self, user_id: str, category: str | None, limit: int
     ) -> List[Memo]:
-        return self.repo.get_all(
-            user_id=user_id, category=category, limit=limit, search=search
-        )
+        return self.repo.get_all(user_id=user_id, category=category, limit=limit)
+
+    def get_memo_by_id(self, memo_id: str) -> Memo | None:
+        return self.repo.get_by_id(memo_id)

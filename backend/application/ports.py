@@ -13,8 +13,12 @@ class MemoUseCase(ABC):
 
     @abstractmethod
     def get_all_memos(
-        self, user_id: str, category: str | None, limit: int, search: str | None
+        self, user_id: str, category: str | None, limit: int
     ) -> List[Memo]:
+        pass
+
+    @abstractmethod
+    def get_memo_by_id(self, memo_id: str) -> Memo | None:
         pass
 
 
@@ -24,7 +28,9 @@ class MemoRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all(
-        self, user_id: str, category: str | None, limit: int, search: str | None
-    ) -> List[Memo]:
+    def get_all(self, user_id: str, category: str | None, limit: int) -> List[Memo]:
+        pass
+
+    @abstractmethod
+    def get_by_id(self, memo_id: str) -> Memo | None:
         pass
