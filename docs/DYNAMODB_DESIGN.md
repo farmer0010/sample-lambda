@@ -18,7 +18,7 @@
 조회 패턴
 
 * GSI1PK = MEMO#{memo_id}
-* 조회된 원본 PK, SK를 이용하여 수정 및 삭제 진행
+* 조회된 GSI1SK(USER#{user_id})를 이용하여 원본 아이템 수정 및 삭제
 
 ### 전체 메모 조회
 
@@ -31,32 +31,34 @@
 
 조회 패턴
 
-* GSI2PK = USER#{user_id}#CATEGORY#{category}
+* PK = USER#{user_id}
+* LSI1SK begins_with C#{category}#
 * ScanIndexForward = False
 
 ---
 
 ## Base Table
 
-| Key | Value          |
-| --- | -------------- |
-| PK  | USER#{user_id} |
-| SK  | MEMO#{memo_id} |
+| Key    | Value                    |
+| ------ | ------------------------ |
+| PK     | USER#{user_id}           |
+| SK     | MEMO#{memo_id}           |
+| LSI1SK | C#{category}#M#{memo_id} |
 
 ---
 
-## GSI1
+## LSI1 (CategoryIndex)
+
+| Key    | Value                    |
+| ------ | ------------------------ |
+| LSI1PK | Base Table PK            |
+| LSI1SK | C#{category}#M#{memo_id} |
+
+---
+
+## GSI1 (MemoLookupIndex)
 
 | Key    | Value         |
 | ------ | ------------- |
 | GSI1PK | Base Table SK |
 | GSI1SK | Base Table PK |
-
----
-
-## GSI2
-
-| Key    | Value                              |
-| ------ | ---------------------------------- |
-| GSI2PK | USER#{user_id}#CATEGORY#{category} |
-| GSI2SK | Base Table SK                      |
