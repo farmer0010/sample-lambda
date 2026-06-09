@@ -18,7 +18,7 @@ class MemoUseCase(ABC):
         pass
 
     @abstractmethod
-    def get_memo_by_id(self, memo_id: str) -> Memo | None:
+    def get_memo_by_id(self, memo_id: str, user_id: str) -> Memo | None:
         pass
 
 
