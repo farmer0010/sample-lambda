@@ -25,9 +25,10 @@ class DynamoDBRepository(MemoRepository):
             "created_at": memo.created_at,
             "GSI1PK": f"MEMO#{memo.id}",
             "GSI1SK": f"USER#{memo.user_id}",
-            "GSI2PK": f"USER#{memo.user_id}#CATEGORY#{memo.category}",
-            "GSI2SK": f"MEMO#{memo.id}",
         }
+        if memo.category:
+            item["LSI1SK"] = f"C#{memo.category}#M#{memo.id}"
+
         self.table.put_item(Item=item)
 
     def get_all(self, user_id: str, category: str | None, limit: int) -> list[Memo]:
@@ -37,10 +38,11 @@ class DynamoDBRepository(MemoRepository):
         }
 
         if category:
-            query_params["IndexName"] = "GSI2"
-            query_params["KeyConditionExpression"] = Key("GSI2PK").eq(
-                f"USER#{user_id}#CATEGORY#{category}"
-            )
+            query_params["IndexName"] = "CategoryIndex"
+            query_params["KeyConditionExpression"] = Key("PK").eq(
+                f"USER#{user_id}"
+            ) & Key("LSI1SK").begins_with(f"C#{category}#")
+
         else:
             query_params["KeyConditionExpression"] = Key("PK").eq(f"USER#{user_id}")
 
@@ -68,7 +70,7 @@ class DynamoDBRepository(MemoRepository):
 
     def get_by_id(self, memo_id: str) -> Memo | None:
         response = self.table.query(
-            IndexName="GSI1",
+            IndexName="MemoLookupIndex",
             KeyConditionExpression=Key("GSI1PK").eq(f"MEMO#{memo_id}"),
         )
         items = response.get("Items", [])

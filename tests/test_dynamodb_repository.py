@@ -26,8 +26,7 @@ def test_save_memo():
             "created_at": memo.created_at,
             "GSI1PK": f"MEMO#{memo.id}",
             "GSI1SK": f"USER#{memo.user_id}",
-            "GSI2PK": f"USER#{memo.user_id}#CATEGORY#{memo.category}",
-            "GSI2SK": f"MEMO#{memo.id}",
+            "LSI1SK": f"C#{memo.category}#M#{memo.id}",
         }
     )
 
@@ -109,8 +108,9 @@ def test_get_memos_filter_by_category():
     assert java_memos[0].id == "3"
 
     mock_table.query.assert_called_once_with(
-        IndexName="GSI2",
-        KeyConditionExpression=Key("GSI2PK").eq("USER#testUser#CATEGORY#java"),
+        IndexName="CategoryIndex",
+        KeyConditionExpression=Key("PK").eq("USER#testUser")
+        & Key("LSI1SK").begins_with("C#java#"),
         ScanIndexForward=False,
         Limit=5,
     )
@@ -138,6 +138,6 @@ def test_get_memo_by_id():
     assert memo.content == "단건 조회 테스트 메모"
 
     mock_table.query.assert_called_once_with(
-        IndexName="GSI1",
+        IndexName="MemoLookupIndex",
         KeyConditionExpression=Key("GSI1PK").eq("MEMO#123"),
     )
