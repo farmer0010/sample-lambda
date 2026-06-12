@@ -23,8 +23,6 @@ class DynamoDBRepository(MemoRepository):
             "category": memo.category,
             "content": memo.content,
             "created_at": memo.created_at,
-            "GSI1PK": f"MEMO#{memo.id}",
-            "GSI1SK": f"USER#{memo.user_id}",
         }
         if memo.category:
             item["LSI1SK"] = f"C#{memo.category}#M#{memo.id}"
@@ -71,7 +69,7 @@ class DynamoDBRepository(MemoRepository):
     def get_by_id(self, memo_id: str) -> Memo | None:
         response = self.table.query(
             IndexName="MemoLookupIndex",
-            KeyConditionExpression=Key("GSI1PK").eq(f"MEMO#{memo_id}"),
+            KeyConditionExpression=Key("SK").eq(f"MEMO#{memo_id}"),
         )
         items = response.get("Items", [])
         if not items:

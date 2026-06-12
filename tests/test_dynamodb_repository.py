@@ -24,8 +24,6 @@ def test_save_memo():
             "category": memo.category,
             "content": memo.content,
             "created_at": memo.created_at,
-            "GSI1PK": f"MEMO#{memo.id}",
-            "GSI1SK": f"USER#{memo.user_id}",
             "LSI1SK": f"C#{memo.category}#M#{memo.id}",
         }
     )
@@ -139,5 +137,5 @@ def test_get_memo_by_id():
 
     mock_table.query.assert_called_once_with(
         IndexName="MemoLookupIndex",
-        KeyConditionExpression=Key("GSI1PK").eq("MEMO#123"),
+        KeyConditionExpression=Key("SK").eq("MEMO#123"),
     )
