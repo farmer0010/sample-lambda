@@ -11,10 +11,7 @@ class MemoService(MemoUseCase):
     def create_memo(
         self, user_id: str, content: str, category: str | None = None
     ) -> Memo:
-        if category is not None:
-            new_memo = Memo(user_id=user_id, content=content, category=category)
-        else:
-            new_memo = Memo(user_id=user_id, content=content)
+        new_memo = Memo(user_id=user_id, content=content, category=category)
         self.repo.save(new_memo)
         return new_memo
 

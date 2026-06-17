@@ -23,9 +23,8 @@ class DynamoDBRepository(MemoRepository):
             "category": memo.category,
             "content": memo.content,
             "created_at": memo.created_at,
+            "LSI1SK": f"C#{memo.category}#M#{memo.id}",
         }
-        if memo.category:
-            item["LSI1SK"] = f"C#{memo.category}#M#{memo.id}"
 
         self.table.put_item(Item=item)
 
@@ -50,7 +49,7 @@ class DynamoDBRepository(MemoRepository):
         memos = []
 
         for item in items:
-            item_category = item.get("category", "basic")
+            item_category = item["category"]
 
             _, memo_id = item.get("SK", "").split("#")
 
@@ -76,7 +75,7 @@ class DynamoDBRepository(MemoRepository):
             return None
 
         item = items[0]
-        item_category = item.get("category", "basic")
+        item_category = item["category"]
         _, extracted_id = item.get("SK", "").split("#")
         return Memo(
             id=extracted_id,

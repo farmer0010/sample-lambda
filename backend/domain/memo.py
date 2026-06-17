@@ -12,13 +12,16 @@ class MemoDomainError(Exception):
 class Memo:
     content: str
     user_id: str
-    category: str = "basic"
+    category: str | None = "basic"
     id: str = field(default_factory=lambda: str(ULID()))
     created_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
 
     def __post_init__(self):
+        if self.category is None or self.category.strip() == "":
+            self.category = "basic"
+
         if not self.content or not self.content.strip():
             raise MemoDomainError("메모 내용은 비어있을 수 없습니다.")
         if len(self.content) > 1500:
