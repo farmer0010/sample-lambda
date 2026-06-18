@@ -21,6 +21,10 @@ class MemoUseCase(ABC):
     def get_memo_by_id(self, memo_id: str, user_id: str) -> Memo | None:
         pass
 
+    @abstractmethod
+    def update_memo(self, memo_id: str, user_id: str, content: str) -> Memo:
+        pass
+
 
 class MemoRepository(ABC):
     @abstractmethod
