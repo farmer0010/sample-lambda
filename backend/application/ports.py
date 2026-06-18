@@ -21,6 +21,10 @@ class MemoUseCase(ABC):
     def get_memo_by_id(self, memo_id: str, user_id: str) -> Memo | None:
         pass
 
+    @abstractmethod
+    def delete_memo(self, memo_id: str, user_id: str) -> None:
+        pass
+
 
 class MemoRepository(ABC):
     @abstractmethod
@@ -33,4 +37,8 @@ class MemoRepository(ABC):
 
     @abstractmethod
     def get_by_id(self, memo_id: str) -> Memo | None:
+        pass
+
+    @abstractmethod
+    def delete(self, memo: Memo) -> None:
         pass
