@@ -22,13 +22,17 @@ class MemoUseCase(ABC):
         pass
 
     @abstractmethod
+    def update_memo(self, memo_id: str, user_id: str, content: str) -> Memo:
+        pass
+
+    @abstractmethod
     def delete_memo(self, memo_id: str, user_id: str) -> None:
         pass
 
 
 class MemoRepository(ABC):
     @abstractmethod
-    def save(self, memo: Memo):
+    def save(self, memo: Memo) -> None:
         pass
 
     @abstractmethod

@@ -84,3 +84,8 @@ class DynamoDBRepository(MemoRepository):
             category=item_category,
             created_at=item.get("created_at", ""),
         )
+
+    def delete(self, memo: Memo) -> None:
+        self.table.delete_item(
+            Key={"PK": f"USER#{memo.user_id}", "SK": f"MEMO#{memo.id}"},
+        )
