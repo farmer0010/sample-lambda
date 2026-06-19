@@ -23,6 +23,7 @@ class DynamoDBRepository(MemoRepository):
             "category": memo.category,
             "content": memo.content,
             "created_at": memo.created_at,
+            "updated_at": memo.updated_at,
             "LSI1SK": f"C#{memo.category}#M#{memo.id}",
         }
 
@@ -60,6 +61,7 @@ class DynamoDBRepository(MemoRepository):
                     content=item["content"],
                     category=item_category,
                     created_at=item.get("created_at", ""),
+                    updated_at=item.get("updated_at"),
                 )
             )
 
@@ -83,4 +85,5 @@ class DynamoDBRepository(MemoRepository):
             content=item["content"],
             category=item_category,
             created_at=item.get("created_at", ""),
+            updated_at=item.get("updated_at"),
         )

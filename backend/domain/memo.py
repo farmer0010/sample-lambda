@@ -17,6 +17,7 @@ class Memo:
     created_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
+    updated_at: str | None = None
 
     def __post_init__(self):
         if self.category is None or self.category.strip() == "":
@@ -38,3 +39,4 @@ class Memo:
     def update_content(self, new_content: str) -> None:
         self._validate_content(new_content)
         self.content = new_content
+        self.updated_at = datetime.now(timezone.utc).isoformat()
