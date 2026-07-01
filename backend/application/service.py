@@ -1,5 +1,6 @@
 from typing import List
 
+from backend.application.exceptions import MemoAccessDeniedError
 from backend.application.ports import MemoRepository, MemoUseCase
 from backend.domain.memo import Memo
 
@@ -26,4 +27,12 @@ class MemoService(MemoUseCase):
             return None
         if memo.user_id != user_id:
             return None
+        return memo
+
+    def update_memo(self, memo_id: str, user_id: str, content: str) -> Memo:
+        memo = self.repo.get_by_id(memo_id)
+        if not memo or memo.user_id != user_id:
+            raise MemoAccessDeniedError("메모를 찾을 수 없거나 수정 권한이 없습니다.")
+        memo.update_content(content)
+        self.repo.save(memo)
         return memo

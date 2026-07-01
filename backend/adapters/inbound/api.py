@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
 from backend.adapters.outbound.dynamodb_repository import DynamoDBRepository
+from backend.application.exceptions import MemoAccessDeniedError
 from backend.application.ports import MemoUseCase
 from backend.application.service import MemoService
 from backend.domain.memo import MemoDomainError
@@ -19,6 +20,10 @@ class MemoCreateRequest(BaseModel):
 class MemoCreateResponse(BaseModel):
     message: str
     id: str
+
+
+class UpdateMemoRequest(BaseModel):
+    content: str
 
 
 def get_memo_use_case() -> MemoUseCase:
@@ -38,7 +43,9 @@ def add_memo(
 ):
     try:
         memo = use_case.create_memo(
-            user_id=x_user_id, content=request.content, category=request.category
+            user_id=x_user_id,
+            content=request.content,
+            category=request.category,
         )
         return MemoCreateResponse(message="메모 저장 완료", id=memo.id)
     except MemoDomainError as e:
@@ -52,7 +59,11 @@ def get_memos(
     x_user_id: str = Header(..., alias="X-USER-ID"),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
-    memos = service.get_all_memos(user_id=x_user_id, category=category, limit=limit)
+    memos = service.get_all_memos(
+        user_id=x_user_id,
+        category=category,
+        limit=limit,
+    )
     return {"memos": memos}
 
 
@@ -62,7 +73,34 @@ def get_memo(
     x_user_id: str = Header(..., alias="X-USER-ID"),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
-    memo = service.get_memo_by_id(memo_id=memo_id, user_id=x_user_id)
+    memo = service.get_memo_by_id(
+        memo_id=memo_id,
+        user_id=x_user_id,
+    )
+
     if not memo:
         raise HTTPException(status_code=404, detail="메모를 찾을 수 없습니다")
+
     return memo
+
+
+@router.put("/memos/{memo_id}", status_code=200)
+def update_memo(
+    memo_id: str,
+    request: UpdateMemoRequest,
+    x_user_id: str = Header(..., alias="X-USER-ID"),
+    service: MemoUseCase = Depends(get_memo_use_case),
+):
+    try:
+        updated_memo = service.update_memo(
+            memo_id=memo_id,
+            user_id=x_user_id,
+            content=request.content,
+        )
+        return updated_memo
+
+    except MemoAccessDeniedError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+    except MemoDomainError as e:
+        raise HTTPException(status_code=400, detail=str(e))
