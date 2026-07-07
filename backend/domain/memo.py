@@ -16,6 +16,7 @@ class Memo:
     id: str = field(default_factory=lambda: str(ULID()))
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime | None = None
+    is_deleted: bool = False
 
     def __post_init__(self):
         if self.category is None or self.category.strip() == "":
@@ -35,6 +36,13 @@ class Memo:
             raise MemoDomainError("메모는 1500자를 초과할 수 없습니다.")
 
     def update_content(self, new_content: str) -> None:
+        if self.is_deleted:
+            raise MemoDomainError("이미 삭제된 메모는 수정할 수 없습니다.")
         self._validate_content(new_content)
         self.content = new_content
         self.updated_at = datetime.now(timezone.utc)
+
+    def delete(self) -> None:
+        if self.is_deleted:
+            raise MemoDomainError("이미 삭제된 메모입니다.")
+        self.is_deleted = True

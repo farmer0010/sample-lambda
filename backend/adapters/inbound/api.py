@@ -84,7 +84,7 @@ def get_memo(
     return memo
 
 
-@router.put("/memos/{memo_id}", status_code=200)
+@router.put("/memos/{memo_id}")
 def update_memo(
     memo_id: str,
     request: UpdateMemoRequest,
@@ -104,3 +104,16 @@ def update_memo(
 
     except MemoDomainError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/memos/{memo_id}")
+def delete_memo(
+    memo_id: str,
+    x_user_id: str = Header(..., alias="X-USER-ID"),
+    service: MemoUseCase = Depends(get_memo_use_case),
+):
+    try:
+        service.delete_memo(memo_id=memo_id, user_id=x_user_id)
+        return {"message": "메모 삭제 완료"}
+    except MemoAccessDeniedError as e:
+        raise HTTPException(status_code=403, detail=str(e))

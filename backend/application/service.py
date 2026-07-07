@@ -36,3 +36,10 @@ class MemoService(MemoUseCase):
         memo.update_content(content)
         self.repo.save(memo)
         return memo
+
+    def delete_memo(self, memo_id: str, user_id: str) -> None:
+        memo = self.repo.get_by_id(memo_id)
+        if not memo or memo.user_id != user_id:
+            raise MemoAccessDeniedError("메모를 찾을 수 없거나 삭제 권한이 없습니다.")
+        memo.delete()
+        self.repo.save(memo)
