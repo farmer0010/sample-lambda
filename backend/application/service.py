@@ -41,4 +41,5 @@ class MemoService(MemoUseCase):
         memo = self.repo.get_by_id(memo_id)
         if not memo or memo.user_id != user_id:
             raise MemoAccessDeniedError("메모를 찾을 수 없거나 삭제 권한이 없습니다.")
-        self.repo.delete(memo)
+        memo.delete()
+        self.repo.save(memo)

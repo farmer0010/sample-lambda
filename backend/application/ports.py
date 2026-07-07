@@ -42,7 +42,3 @@ class MemoRepository(ABC):
     @abstractmethod
     def get_by_id(self, memo_id: str) -> Memo | None:
         pass
-
-    @abstractmethod
-    def delete(self, memo: Memo) -> None:
-        pass

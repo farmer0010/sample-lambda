@@ -38,6 +38,12 @@ class DynamoDBRepository(MemoRepository):
         )
 
     def save(self, memo: Memo) -> None:
+        if memo.is_deleted:
+            self.table.delete_item(
+                Key={"PK": f"USER#{memo.user_id}", "SK": f"MEMO#{memo.id}"},
+            )
+            return
+
         item = {
             "PK": f"USER#{memo.user_id}",
             "SK": f"MEMO#{memo.id}",
@@ -86,11 +92,3 @@ class DynamoDBRepository(MemoRepository):
             return None
 
         return self._to_domain(items[0])
-
-    def delete(self, memo: Memo) -> None:
-        self.table.delete_item(
-            Key={
-                "PK": f"USER#{memo.user_id}",
-                "SK": f"MEMO#{memo.id}",
-            },
-        )
