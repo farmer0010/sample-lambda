@@ -3,7 +3,7 @@ FUNCTION_NAME ?= my-function-name
 .PHONY: dev build deploy
 
 dev:
-	uvicorn app.main:app --reload
+	uvicorn backend.main:app --reload
 
 build:
 	rm -rf ./_package lambda.zip

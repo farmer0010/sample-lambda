@@ -1,12 +1,10 @@
-import os
-
+import requests
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
-from backend.adapters.outbound.dynamodb_repository import DynamoDBRepository
 from backend.application.exceptions import MemoAccessDeniedError
 from backend.application.ports import MemoUseCase
-from backend.application.service import MemoService
+from backend.dependencies import get_memo_use_case
 from backend.domain.memo import MemoDomainError
 
 router = APIRouter()
@@ -26,24 +24,46 @@ class UpdateMemoRequest(BaseModel):
     content: str
 
 
-def get_memo_use_case() -> MemoUseCase:
-    table_name = os.getenv("DYNAMODB_TABLE")
-    if not table_name:
-        raise ValueError("DYNAMODB_TABLE 환경변수가 설정되지 않았습니다")
+def get_current_user_id(authorization: str | None = Header(None)) -> str:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401,
+            detail="인증되지 않은 요청입니다. 유효한 Bearer 인증 토큰이 필요합니다.",
+        )
 
-    repo = DynamoDBRepository(table_name=table_name)
-    return MemoService(repo)
+    token = authorization.split(" ")[1]
+    github_user_uri = "https://api.github.com/user"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+    }
+
+    try:
+        response = requests.get(github_user_uri, headers=headers, timeout=5)
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=401, detail="유효하지 않거나 만료된 깃허브 토큰입니다."
+            )
+
+        user_data = response.json()
+        return str(user_data.get("id"))
+
+    except requests.exceptions.RequestException:
+        raise HTTPException(
+            status_code=503, detail="깃허브 인증 서버와 통신할 수 없습니다."
+        )
 
 
-@router.post("/add", response_model=MemoCreateResponse)
+@router.post("/memos", response_model=MemoCreateResponse)
 def add_memo(
     request: MemoCreateRequest,
-    x_user_id: str = Header(..., alias="X-USER-ID"),
+    user_id: str = Depends(get_current_user_id),
     use_case: MemoUseCase = Depends(get_memo_use_case),
 ):
     try:
         memo = use_case.create_memo(
-            user_id=x_user_id,
+            user_id=user_id,
             content=request.content,
             category=request.category,
         )
@@ -56,11 +76,11 @@ def add_memo(
 def get_memos(
     category: str | None = None,
     limit: int = 5,
-    x_user_id: str = Header(..., alias="X-USER-ID"),
+    user_id: str = Depends(get_current_user_id),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
     memos = service.get_all_memos(
-        user_id=x_user_id,
+        user_id=user_id,
         category=category,
         limit=limit,
     )
@@ -70,12 +90,12 @@ def get_memos(
 @router.get("/memos/{memo_id}")
 def get_memo(
     memo_id: str,
-    x_user_id: str = Header(..., alias="X-USER-ID"),
+    user_id: str = Depends(get_current_user_id),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
     memo = service.get_memo_by_id(
         memo_id=memo_id,
-        user_id=x_user_id,
+        user_id=user_id,
     )
 
     if not memo:
@@ -88,13 +108,13 @@ def get_memo(
 def update_memo(
     memo_id: str,
     request: UpdateMemoRequest,
-    x_user_id: str = Header(..., alias="X-USER-ID"),
+    user_id: str = Depends(get_current_user_id),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
     try:
         updated_memo = service.update_memo(
             memo_id=memo_id,
-            user_id=x_user_id,
+            user_id=user_id,
             content=request.content,
         )
         return updated_memo
@@ -109,11 +129,11 @@ def update_memo(
 @router.delete("/memos/{memo_id}")
 def delete_memo(
     memo_id: str,
-    x_user_id: str = Header(..., alias="X-USER-ID"),
+    user_id: str = Depends(get_current_user_id),
     service: MemoUseCase = Depends(get_memo_use_case),
 ):
     try:
-        service.delete_memo(memo_id=memo_id, user_id=x_user_id)
+        service.delete_memo(memo_id=memo_id, user_id=user_id)
         return {"message": "메모 삭제 완료"}
     except MemoAccessDeniedError as e:
         raise HTTPException(status_code=403, detail=str(e))
