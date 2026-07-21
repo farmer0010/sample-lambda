@@ -1,4 +1,7 @@
+from typing import cast
+
 import requests
+from cachetools import TTLCache
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
@@ -24,6 +27,9 @@ class UpdateMemoRequest(BaseModel):
     content: str
 
 
+TOKEN_CACHE = cast(TTLCache[str, str, float], TTLCache(maxsize=100, ttl=300))
+
+
 def get_current_user_id(authorization: str | None = Header(None)) -> str:
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
@@ -32,6 +38,10 @@ def get_current_user_id(authorization: str | None = Header(None)) -> str:
         )
 
     token = authorization.split(" ")[1]
+
+    if token in TOKEN_CACHE:
+        return TOKEN_CACHE[token]
+
     github_user_uri = "https://api.github.com/user"
     headers = {
         "Authorization": f"Bearer {token}",
@@ -47,7 +57,10 @@ def get_current_user_id(authorization: str | None = Header(None)) -> str:
             )
 
         user_data = response.json()
-        return str(user_data.get("id"))
+        user_id = str(user_data.get("id"))
+
+        TOKEN_CACHE[token] = user_id
+        return user_id
 
     except requests.exceptions.RequestException:
         raise HTTPException(
