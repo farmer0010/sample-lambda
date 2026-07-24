@@ -1,9 +1,9 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name="mylog",
     version="0.1.0",
-    py_modules=["mylog"],
+    packages=find_packages(include=["cli", "cli.*"]),
     install_requires=[
         "requests",
         "keyring",
@@ -11,7 +11,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "mylog=mylog:main",
+            "mylog=cli.adapters.inbound.cli_adapter:main",
         ],
     },
 )
